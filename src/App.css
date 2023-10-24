@@ -1,0 +1,30 @@
+.App {}
+
+.count {
+	width: 500px;
+	border: 1px solod gray;
+	padding: 20px;
+	text-align: 10px;
+	text-align: center;
+}
+
+.dutton {
+	font-size: 30;
+	background-color: cyan;
+	color: white;
+	cursor: pointer;
+	border-radius: 10px;
+	border: none;
+	padding: 5px 10px;
+}
+
+.text {
+	margin: 0px 20px;
+	font-size: 30px;
+}
+
+.input-group span {
+	width: 150px;
+	justify-content: center;
+}
+
