@@ -1,4 +1,6 @@
-.App {}
+.App {
+	margin: 50px;
+}
 
 .count {
 	width: 500px;
@@ -28,3 +30,7 @@
 	justify-content: center;
 }
 
+.active {
+	color: black;
+	background-color: white;
+}

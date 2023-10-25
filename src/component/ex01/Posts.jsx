@@ -8,7 +8,7 @@ const Posts = () => {
 
     const getPosts = () => {
         setLoading(true);
-        fetch('https://jsonplaceholder.typicode.com/posts')
+        fetch('https://jsonplaceholder.typicode.com/todos')
             .then(response => response.json())
             .then(json => {
                 const start = (page - 1) * 10 + 1;

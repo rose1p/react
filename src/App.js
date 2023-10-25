@@ -1,15 +1,18 @@
 import './App.css';
-import Posts from './component/ex01/Posts';
-import Product from './component/ex01/Product';
-import Todos from './component/ex01/Todos';
+import BookSearch from './component/ex03/BookSearch';
+import { Row, Col} from 'react-bootstrap'
 
 
 const App = () => {
+
 	return (
 		<div className="App">
-			<Posts />
+			<Row>
+			<Col><BookSearch /></Col>
+			<Col><BookSearch /></Col>
+			</Row>
 		</div>
-	);
+	)
 }
 
 export default App;
