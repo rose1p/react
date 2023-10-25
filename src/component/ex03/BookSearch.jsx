@@ -67,12 +67,18 @@ const BookSearch = () => {
             </Row>
             <Table striped>
                 <thead>
-                    <tr><td>이미지</td><td>제목</td><td>가격</td><td>저자</td></tr>
+                    <tr>
+                        <td>이미지</td><td>제목</td><td>가격</td><td>저자</td>
+                        <td>상세보기</td>
+                    </tr>
                 </thead>
                 <tbody>
-                    {books.map(book =>
-                        <Book key={book.isbn} book={book} />
-                    )}
+                    {loading ?
+                        <tr>로딩중...</tr>
+                        :
+                        books.map(book =>
+                            <Book key={book.isbn} book={book} />)
+                    }
                 </tbody>
             </Table>
             {last > 1 &&

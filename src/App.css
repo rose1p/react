@@ -34,3 +34,8 @@
 	color: black;
 	background-color: white;
 }
+
+a {
+	text-decoration: none !important;
+	color: skyblue;
+}
