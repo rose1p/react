@@ -1,14 +1,17 @@
 import './App.css';
-import RouterPage from './component/ex03/RouterPage';
-
+import HeaderPage from './component/Shop/HeaderPage';
+import { Container } from 'react-bootstrap';
+import RouterPage from './component/Shop/RouterPage';
 
 const App = () => {
-
+	const background = "/images/header02.png";
 	return (
-		<div className="App">
+		<Container>
+			<img src={background} width="100%" />
+			<HeaderPage />
 			<RouterPage />
-		</div>
-	)
+		</Container>
+	);
 }
 
 export default App;

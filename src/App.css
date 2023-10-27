@@ -12,7 +12,7 @@
 
 .dutton {
 	font-size: 30;
-	background-color: cyan;
+	background-color: white;
 	color: white;
 	cursor: pointer;
 	border-radius: 10px;
@@ -31,11 +31,28 @@
 }
 
 .active {
-	color: black;
-	background-color: white;
+	color: white;
 }
 
 a {
 	text-decoration: none !important;
-	color: skyblue;
+	color: white;
+}
+
+.home {
+	font-size: 1.5rem;
+	color: white;
+	margin-right: 20px;
+}
+
+.navbar-nav a {
+	color: white;
+}
+
+.ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
 }
