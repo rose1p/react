@@ -63,3 +63,12 @@ a {
 	border-radius: 50%;
 	cursor: pointer;
 }
+
+.heart {
+	color: red;
+	cursor: pointer;
+}
+
+small {
+	color: gray;
+}
