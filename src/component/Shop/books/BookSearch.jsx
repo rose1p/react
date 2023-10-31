@@ -14,6 +14,7 @@ const BookSearch = () => {
     const [books, setBooks] = useState([]);
     const [total, setTotal] = useState(0);
     const [end, setEnd] = useState(false);
+    const [chcnt, setchcnt] = useState(0);
 
     const getBooks = async () => {
         const url = `https://dapi.kakao.com/v3/search/book?target=title&query=${query}&and&size=5&page=${page}`;
@@ -23,7 +24,9 @@ const BookSearch = () => {
         setLoading(true);
         const res = await axios(url, config);
         //console.log(res.data);
-        setBooks(res.data.documents);
+        let docs = res.data.documents;
+        docs = docs.map(doc => doc && { ...doc, checked: false });
+        setBooks(docs);
         setTotal(res.data.meta.pageable_count);
         setEnd(res.data.meta.id_end);
         setLoading(false);
@@ -32,6 +35,13 @@ const BookSearch = () => {
     useEffect(() => {
         getBooks();
     }, [location]);
+
+    useEffect(() => {
+        let cnt = 0;
+        books.forEach(book => book.checked && cnt++);
+        //console.log('............', cnt)
+        setchcnt(cnt);
+    }, [books]);
 
     const onSearch = (e) => {
         e.preventDefault();
@@ -56,6 +66,44 @@ const BookSearch = () => {
         }
     }
 
+    const onCheangeAll = (e) => {
+        const docs = books.map(book => book && { ...book, checked: e.target.checked });
+        setBooks(docs);
+    }
+
+    const onChangeSingle = (e, isbn) => {
+        const docs = books.map(book => book.isbn === isbn ? { ...book, checked: e.target.checked } : book);
+        setBooks(docs);
+    }
+
+    const onClickSave = () => {
+        if (chcnt === 0) {
+            alert('저장할 도서를 선택해주세요');
+        } else {
+            if (window.confirm(`${chcnt}권 도서를 저장하시겠습니까?`)) {
+                let count = 0;
+                books.forEach(async (book) => {
+                    if (book.checked) {
+                        //도서저장
+                        const url = "/books/insert"
+                        const res = await axios.post(url, { ...book, authors: book.authors.join() });
+                        if (res.data === 0) {
+                            //console.log('............');
+                            count++;
+                        }
+                    }
+                });
+
+                setTimeout(() => {
+                    alert(`${count} 권이 저장되었습니다.`);
+                    const docs=books.map (book=> book && {...book, checked:false});
+                    setBooks(docs);
+                }, 1000);
+                //alert(`${chcnt}권이 저장되었습니다.`);
+            }
+        }
+    }
+
     if (loading) return <div className='text-center my-5'><Spinner variant='bark' /></div>
 
     return (
@@ -71,11 +119,14 @@ const BookSearch = () => {
                     </form>
                 </Col>
                 <Col className='mt-1'>검색수: {total}권</Col>
+                <Col className='text-end'><Button size='sm' onClick={onClickSave}>선택저장</Button></Col>
             </Row>
             <Table>
                 <thead>
                     <tr>
                         <th>이미지</th><th>제목</th><th>가격</th><th>저자</th><th>저장</th>
+                        <th><input checked={books.length === chcnt}
+                            type='checkbox' onChange={onCheangeAll} /></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -83,9 +134,11 @@ const BookSearch = () => {
                         <tr key={book.isbn}>
                             <td><img src={book.thumbnail || "http://via.placeholder.com/170x250"} width="30" /></td>
                             <td>{book.title}</td>
-                            <td>{book.price}원</td>
+                            <td>{book.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원</td>
                             <td>{book.authors}</td>
                             <td><Button size='sm' onClick={() => onInsert(book)}>저장</Button></td>
+                            <td><input onChange={(e) => { onChangeSingle(e, book.isbn) }}
+                                type='checkbox' checked={book.checked} /></td>
                         </tr>
                     )}
                 </tbody>

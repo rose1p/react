@@ -1,5 +1,7 @@
 .App {
 	margin: 50px;
+	background-color: balsk;
+
 }
 
 .count {
@@ -55,4 +57,9 @@ a {
     display: -webkit-box;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
+}
+
+.photo {
+	border-radius: 50%;
+	cursor: pointer;
 }
