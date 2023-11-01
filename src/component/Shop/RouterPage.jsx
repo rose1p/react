@@ -8,6 +8,7 @@ import MyPage from './users/MyPage'
 import UpdatePage from './users/UpdatePage'
 import BookRead from './books/BookRead'
 import BookUpdate from './books/BookUpdate'
+import BookInfo from './books/BookInfo'
 
 
 
@@ -19,6 +20,7 @@ const RouterPage = () => {
             <Route path='/books/List' element={<BookList />} />
             <Route path='/books/read/:bid' element={<BookRead />} />
             <Route path='/books/update/:bid' element={<BookUpdate />} />
+            <Route path='/books/info/:bid' element={<BookInfo />} />
 
             <Route path='/users/login' element={<LoginPage />} />
             <Route path='/users/mypage' element={<MyPage />} />
