@@ -1,9 +1,11 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Table, Button, Form, Col, Row, Spinner, InputGroup } from 'react-bootstrap'
+import { BoxContext } from '../BoxContext';
 
 const BookSearch = () => {
+    const {box, setBox} = useContext(BoxContext);
     const location = useLocation();
     const path = location.pathname;
     const navi = useNavigate();
@@ -46,13 +48,15 @@ const BookSearch = () => {
     const onSearch = (e) => {
         e.preventDefault();
         if (query === "") {
-            alert("검색어를 입력해주세요");
+            //alert("검색어를 입력해주세요");
+            setBox({show:true, message:'검색어를 입력해주세요'})
         } else {
             navi(`${path}?query=${query}&page=1`);
         }
     }
 
     const onInsert = async (book) => {
+        /*
         if (window.confirm('새로운 도서를 등록하시겠습니까?')) {
             //console.log(book);
             const url = "/books/insert"
@@ -63,7 +67,21 @@ const BookSearch = () => {
             } else {
                 alert("이미 등록된 도서입니다.");
             }
-        }
+        }*/
+        setBox({
+            show:true,
+            message:"새로운 도서를 등록하시겠습니까?",
+            action:async() => {
+                const url = "/books/insert"
+                const res = await axios.post(url, { ...book, authors: book.authors.join() });
+                //console.log(res, data);
+                if (res.data === 0) {
+                    setBox({show:true, message:"도서 등록이 완료되었습니다."});
+                } else {
+                    setBox({show:true, message:"이미 등록된 도서입니다."});
+                }
+            }
+        });
     }
 
     const onCheangeAll = (e) => {
@@ -78,8 +96,13 @@ const BookSearch = () => {
 
     const onClickSave = () => {
         if (chcnt === 0) {
-            alert('저장할 도서를 선택해주세요');
+            //alert('저장할 도서를 선택해주세요');
+            setBox({
+                show:true,
+                message:'저장할 도서를 선택해 주세요.'
+            });
         } else {
+            
             if (window.confirm(`${chcnt}권 도서를 저장하시겠습니까?`)) {
                 let count = 0;
                 books.forEach(async (book) => {
@@ -132,7 +155,7 @@ const BookSearch = () => {
                 <tbody>
                     {books.map(book =>
                         <tr key={book.isbn}>
-                            <td><img src={book.thumbnail || "http://via.placeholder.com/170x250"} width="30" /></td>
+                            <td><img src={book.thumbnail || "http://via.placeholder.com/170x250"} width="70" /></td>
                             <td>{book.title}</td>
                             <td>{book.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원</td>
                             <td>{book.authors}</td>

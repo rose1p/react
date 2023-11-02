@@ -1,9 +1,10 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Button, Form, Row, Col } from 'react-bootstrap'
 import { useParams } from 'react-router-dom';
 import Pagination from "react-js-pagination";
 import '../Pagination.css';
+import { BoxContext } from '../BoxContext';
 
 const ReviewPage = ({ location, setBook, book }) => {
     const [reviwes, setReviews] = useState([]);
@@ -12,13 +13,14 @@ const ReviewPage = ({ location, setBook, book }) => {
     const { bid } = useParams();
     const [total, setTotal] = useState(0);
     const [contents, setContents] = useState("");
+    const { box, setBox } = useContext(BoxContext);
 
     const getReviews = async () => {
         const url = `/review/list.json?page=${page}&size=${size}&bid=${bid}`;
         const res = await axios(url);
         //console.log(res.data);
         let list = res.data.list;
-        list = list.map(r => r && { ...r, ellipsis: true, edit:false, text:r.contents });
+        list = list.map(r => r && { ...r, ellipsis: true, edit: false, text: r.contents });
         setReviews(list);
         setTotal(res.data.total);
         setBook({ ...book, rcnt: res.data.total });
@@ -44,7 +46,7 @@ const ReviewPage = ({ location, setBook, book }) => {
 
     const onClickRegister = async () => {
         if (contents === "") {
-            alert("리뷰 내용을 입력하세요!");
+            setBox({ show: true, message: '내용을 입력해주세요' });
         } else {
             const res = await axios.post('/review/insert', {
                 uid: sessionStorage.getItem("uid"),
@@ -59,12 +61,24 @@ const ReviewPage = ({ location, setBook, book }) => {
     }
 
     const onClickDelete = async (rid) => {
+        /*
         if (window.confirm(`${rid}번 리뷰를 삭재하시겠습니까?`)) {
             const res = await axios.post('/review/delete', { rid });
             if (res.data === 1) {
                 getReviews();
             }
         }
+        */
+        setBox({
+            show: true,
+            message: `${rid}번 리뷰를 삭재하겠습니까?`,
+            action: async () => {
+                const res = await axios.post('/review/delete', { rid: rid });
+                if (res.data === 1) {
+                    getReviews();
+                }
+            }
+        })
     }
 
     const onClickUpdate = (rid) => {
@@ -72,9 +86,21 @@ const ReviewPage = ({ location, setBook, book }) => {
         setReviews(list);
     }
 
-    const onClickCancel = (rid) => {
-        const list = reviwes.map(r => r.rid === rid ? { ...r, edit: false, text:r.contents } : r);
-        setReviews(list);
+    const onClickCancel = (rid, text, contents) => {
+        if (text !== contents) {
+            //if (!window.confirm("취소하시겠습니까?")) return;
+            setBox({
+                show: true,
+                message: "정말로 취소하시겠습니까?",
+                action: () => {
+                    const list = reviwes.map(r => r.rid === rid ? { ...r, edit: false, text: r.contents } : r);
+                    setReviews(list);
+                }
+            })
+        } else {
+            const list = reviwes.map(r => r.rid === rid ? { ...r, edit: false, text: r.contents } : r);
+            setReviews(list);
+        }
     }
 
     const onChange = (rid, e) => {
@@ -82,14 +108,26 @@ const ReviewPage = ({ location, setBook, book }) => {
         setReviews(list);
     }
 
-    const onClickSave =async (rid, text, contents) => {
-        if(text === contents) return;
-        if(window.confirm("수정하시겠습니까?")) {
-            const res = await axios.post("/review/update", {rid, contents:text});
-            if(res.data === 1) {
+    const onClickSave = async (rid, text, contents) => {
+        if (text === contents) return;
+        /*
+        if (window.confirm("수정하시겠습니까?")) {
+            const res = await axios.post("/review/update", { rid, contents: text });
+            if (res.data === 1) {
                 getReviews();
             }
         }
+        */
+        setBox({
+            show: true,
+            message: '수정하시겠습니까?',
+            action: async () => {
+                const res = await axios.post('/review/update', { rid, contents: text });
+                if (res.data === 1) {
+                    getReviews();
+                }
+            }
+        })
     }
 
     return (
@@ -133,9 +171,9 @@ const ReviewPage = ({ location, setBook, book }) => {
                                 <Form.Control onChange={(e) => onChange(review.rid, e)}
                                     value={review.text} rows={5} as="textarea" />
                                 <div className='text-end mt-2'>
-                                    <Button onClick={()=>onClickSave(review.rid, review.text, review.contents)}
+                                    <Button onClick={() => onClickSave(review.rid, review.text, review.contents)}
                                         variant='success' size='sm me-2'>저장</Button>
-                                    <Button onClick={() => onClickCancel(review.rid)}
+                                    <Button onClick={() => onClickCancel(review.rid, review.text, review.contents)}
                                         variant='secondary' size='sm'>취소</Button>
                                 </div>
                             </>

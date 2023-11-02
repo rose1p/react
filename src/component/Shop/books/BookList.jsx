@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import axios from 'axios';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Spinner, Table, Row, Col, InputGroup, Form, Button } from 'react-bootstrap';
 import Pagination from "react-js-pagination";
 import '../Pagination.css';
+import { BoxContext } from '../BoxContext';
 
 const BookList = () => {
+    const { box, setBox } = useContext(BoxContext);
     const size = 5;
     const location = useLocation();
-    const navi=useNavigate();
+    const navi = useNavigate();
     const path = location.pathname;
     const search = new URLSearchParams(location.search);
     const page = search.get("page") ? parseInt(search.get("page")) : 1;
@@ -24,8 +26,8 @@ const BookList = () => {
         setLoading(true);
         const res = await axios(url);
         //console.log(res.data);
-        let list=res.data.list;
-        list = list.map(book=> book && {...book, checked:false});
+        let list = res.data.list;
+        list = list.map(book => book && { ...book, checked: false });
         setBooks(list);
         setTotal(res.data.total);
         setLoading(false);
@@ -36,12 +38,12 @@ const BookList = () => {
     }, [location]);
 
     useEffect(() => {
-        let cnt=0;
-        books.forEach(book=> book.checked && cnt++);
+        let cnt = 0;
+        books.forEach(book => book.checked && cnt++);
         setChcnt(cnt);
     }, [books]);
 
-    const onChangePage = (page) =>{
+    const onChangePage = (page) => {
         navi(`${path}?page=${page}&query=${query}&size=${size}`);
     }
 
@@ -50,32 +52,37 @@ const BookList = () => {
         navi(`${path}?page=1&query=${query}&size=${size}`);
     }
 
-    const onDelete = async(bid) => {
-        if(!window.confirm(`${bid}번 도서를 삭제하실래요?`)) return;
-        const res=await axios.post('/books/delete', {bid});
-        if(res.data === 0) {
+    const onDelete = async (bid) => {
+        if (!window.confirm(`${bid}번 도서를 삭제하실래요?`)) return;
+        const res = await axios.post('/books/delete', { bid });
+        if (res.data === 0) {
             alert("삭제 실패!");
-        }else{
+        } else {
             alert("삭제 성공!");
             getBooks();
         }
     }
 
     const onChangeAll = (e) => {
-        const list = books.map(book=>book && {...book, checked:e.target.checked});
+        const list = books.map(book => book && { ...book, checked: e.target.checked });
         setBooks(list);
     }
 
-    const onChangeSingle = (e, bid)=> {
-        const list = books.map(book=>book.bid===bid ? {...book, checked:e.target.checked} : book);
+    const onChangeSingle = (e, bid) => {
+        const list = books.map(book => book.bid === bid ? { ...book, checked: e.target.checked } : book);
         setBooks(list);
     }
 
-    const onClickDelete = async() => {
-        if(chcnt==0) {
-            alert("삭제할 도서를 선택하세요!")
-        }else{
-            let count=0;
+    const onClickDelete = async () => {
+        if (chcnt == 0) {
+            //alert("삭제할 도서를 선택하세요!")
+            setBox({
+                show: true,
+                message: "삭재할 도서를 선택해 주세요"
+            })
+        } else {
+            let count = 0;
+            /*
             if(window.confirm(`${chcnt}권 도서를 삭제하실래요?`)) {
                 for(const book of books){
                     if(book.checked) {
@@ -85,7 +92,22 @@ const BookList = () => {
                 }
                 alert(`${count}권 삭제되었습니다.`);
                 navi(`${path}?page=1&query=${query}&size=${size}`);
-            }
+            }*/
+            setBox({
+                show: true,
+                message: `${chcnt}권 도서를 삭제하실래요?`,
+                action: async () => {
+                    for (const book of books) {
+                        if (book.checked) {
+                            const res = await axios.post('/books/delete', { bid: book.bid });
+                            if (res.data === 1) count++;
+                        }
+                    }
+                    //alert(`${count}권 삭제되었습니다.`);
+                    setBox({ show: true, message: `${count}권 삭재되었습니다.` });
+                    navi(`${path}?page=1&query=${query}&size=${size}`);
+                }
+            })
         }
     }
 
@@ -97,7 +119,7 @@ const BookList = () => {
                 <Col md={4}>
                     <form onSubmit={onSubmit}>
                         <InputGroup>
-                            <Form.Control value={query} onChange={(e)=>setQuery(e.target.value)}/>
+                            <Form.Control value={query} onChange={(e) => setQuery(e.target.value)} />
                             <Button>검색</Button>
                         </InputGroup>
                     </form>
@@ -108,15 +130,15 @@ const BookList = () => {
                         variant='danger' size="sm">선택삭제</Button>
                 </Col>
             </Row>
-            <hr/>
+            <hr />
             <Table striped hover>
                 <thead>
                     <tr>
                         <th>ID</th><th>이미지</th><td>제목</td>
                         <td>저자</td><td>가격</td><td>등록일</td>
                         <td>삭제</td>
-                        <td><input checked={books.length===chcnt}
-                                type='checkbox' onChange={onChangeAll}/></td>
+                        <td><input checked={books.length === chcnt}
+                            type='checkbox' onChange={onChangeAll} /></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -134,10 +156,10 @@ const BookList = () => {
                             <td width="20%"><div className='ellipsis'>{book.authors}</div></td>
                             <td>{book.fmtprice}원</td>
                             <td>{book.fmtdate}</td>
-                            <td><Button onClick={()=>onDelete(book.bid)}
+                            <td><Button onClick={() => onDelete(book.bid)}
                                 size='sm' variant='danger'>삭제</Button></td>
-                            <td><input onChange={(e)=>onChangeSingle(e, book.bid)}
-                                    type='checkbox' checked={book.checked}/></td>    
+                            <td><input onChange={(e) => onChangeSingle(e, book.bid)}
+                                type='checkbox' checked={book.checked} /></td>
                         </tr>
                     )}
                 </tbody>
@@ -150,7 +172,7 @@ const BookList = () => {
                     pageRangeDisplayed={10}
                     prevPageText={"‹"}
                     nextPageText={"›"}
-                    onChange={onChangePage}/>
+                    onChange={onChangePage} />
             }
         </div>
     )
