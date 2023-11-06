@@ -32,23 +32,31 @@ const HeaderPage = () => {
                 <Navbar.Collapse id="navbarScroll">
                     <Nav
                         className="me-auto my-2 my-lg-0"
-                        style={{ maxHeight: '100px' }}
+                        style={{ maxHeight: '100%' }}
                         navbarScroll>
                         <NavLink to="/">Home</NavLink>
-                        <NavLink to="/books/search">도서검색</NavLink>
-                        <NavLink to="/books/list">도서 목록</NavLink>
-                        {sessionStorage.getItem("uid") &&
-                            <NavLink to="/orders/cart">장바구니</NavLink>
+                        {sessionStorage.getItem("uid") === "admin" &&
+                            <>
+                                <NavLink to="/books/search">도서 검색</NavLink>
+                                <NavLink to="/books/list">도서 목록</NavLink>
+                                <NavLink to="/orders/admin">주문 관리</NavLink>
+                            </>
+                        }
+                        {(sessionStorage.getItem("uid") && sessionStorage.getItem("uid") !== 'admin') &&
+                            <>
+                                <NavLink to="/orders/cart">장바구니</NavLink>
+                                <NavLink to="/orders/list">주문 목록</NavLink>
+                            </>
                         }
                     </Nav>
                     <Nav>
                         {!sessionStorage.getItem("uid") ?
-                            <NavLink to="/users/login">로그인</NavLink>
+                            <NavLink to="/users/login">로그 인</NavLink>
                             :
                             <>
                                 <NavLink to="/users/mypage">{sessionStorage.getItem("uid")}</NavLink>
                                 <NavLink onClick={onLoout}
-                                    to="/users/login">로그아웃</NavLink>
+                                    to="/users/login">로그 아웃</NavLink>
                             </>
                         }
                     </Nav>

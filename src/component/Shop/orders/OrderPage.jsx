@@ -1,13 +1,33 @@
-import React, { useEffect, useState } from 'react'
-import { Table, Alert, Button, Row, Col } from 'react-bootstrap'
+import axios from 'axios';
+import React, { useContext, useEffect, useState } from 'react'
+import { Table, Alert, Button, Row, Col, InputGroup, Form, Card, Spinner } from 'react-bootstrap'
+import ModalPostCode from '../users/ModalPostCode';
+import { BoxContext } from '../BoxContext'
 
 const OrderPage = ({ books }) => {
+    const [loading, setLoading] = useState(false);
+    const { setBox } = useContext(BoxContext)
     const [orders, setOrders] = useState([]);
     const [total, setTotal] = useState(0);; //주문할 전체목록
     const [sum, setSum] = useState(0); //주문할 상품합계
+    const [form, setForm] = useState({
+        uid: '',
+        uname: '',
+        phone: '',
+        address1: '',
+        address2: ''
+    });
 
-    useEffect(()=>{
-        const list = books.filter(book=>book.checked);
+    const { uid, uname, phone, address1, address2 } = form;
+
+    const getUser = async () => {
+        const res = await axios.get(`/users/read/${sessionStorage.getItem("uid")}`);
+        console.log(res.data);
+        setForm(res.data);
+    }
+
+    useEffect(() => {
+        const list = books.filter(book => book.checked);
         setOrders(list);
         let sum1 = 0;
         let total = 0;
@@ -17,8 +37,39 @@ const OrderPage = ({ books }) => {
         });
         setSum(sum1);
         setTotal(total);
+        getUser();
         //console.log(list);
     }, []);
+
+    const onChange = (e) => {
+        setForm({
+            ...form,
+            [e.target.name]: e.target.value
+        })
+    }
+
+    const onOrder = () => {
+        setBox({
+            show: true,
+            message: "주문을 하시겠습니까?",
+            action: async () => {
+                const data = { ...form, sum, uid };
+                //console.log(data);
+                const res = await axios.post('/orders/insert/purchase', data);
+                const pid = res.data;
+                //주문상품 저장
+                for(const order of orders) {
+                    const data = {...order, pid}
+                    //console.log(data);
+                    await axios.post("/orders/insert", data);
+                }
+                setLoading(false);
+                window.location.href="/";
+            }
+        });
+    }
+
+    if(loading) return <div className='text-center my-5'><Spinner variant='primary'/></div>
 
     return (
         <div className='my-5'>
@@ -51,8 +102,34 @@ const OrderPage = ({ books }) => {
                         합계: {sum.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원</Col>
                 </Row>
             </Alert>
-            <div>
-                <Button>주문하기</Button>
+            <div className='my-5'>
+                <h1 className='text-center mb-5'>주문자 정보</h1>
+                <Card className='p-3'>
+                    <form>
+                        <InputGroup className='mb-3'>
+                            <InputGroup.Text>받는이</InputGroup.Text>
+                            <Form.Control onChange={onChange}
+                                value={uname} name="uname" />
+                        </InputGroup>
+                        <InputGroup className='mb-3'>
+                            <InputGroup.Text>전화번호</InputGroup.Text>
+                            <Form.Control onChange={onChange}
+                                value={phone} name='phone' />
+                        </InputGroup>
+                        <InputGroup className='mb-1'>
+                            <InputGroup.Text>받는 주소</InputGroup.Text>
+                            <Form.Control onChange={onChange}
+                                value={address1} name='address1' />
+                            <ModalPostCode user={form} setUser={setForm} />
+                        </InputGroup>
+                        <Form.Control onChange={onChange}
+                            placeholder='상새주소' value={address2} name='address2' />
+                    </form>
+                </Card>
+                <div className='text-center my-3'>
+                    <Button className='px-5' onClick={onOrder}
+                        variant='success'>주문하기</Button>
+                </div>
             </div>
         </div>
     )
